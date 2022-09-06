@@ -7,7 +7,6 @@ import com.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,19 +28,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductEntity> findAll(String nameFilter, Pageable pageable) {
+    public List<ProductEntity> findAll(String nameFilter) {
         Pattern compile = Pattern.compile(nameFilter);
-
-     /*   Specification<ProductEntity> specification = (root, query, builder) -> builder.equal(builder.selectCase()
-                .when(builder.function("regexp_like", Boolean.class, root.get("name"), builder.literal(nameFilter)), 1)
-                .otherwise(0), 1);*/
-
-        Page<ProductEntity> all = productRepository.findAllByNameRegex(nameFilter, pageable);
-        System.out.println(all);
-
         return productRepository.findAll().stream()
                 .filter(product -> !compile.matcher(product.getName()).find())
                 .collect(Collectors.toList());
-        //  return productRepository.findAllByNameRegex(nameFilter, pageable);
+    }
+
+    @Override
+    public Page<ProductEntity> findAll(String nameFilter, Pageable pageable) {
+        return productRepository.findAllByNameRegex(nameFilter, pageable);
     }
 }

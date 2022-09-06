@@ -1,7 +1,6 @@
 package com.product.controller;
 
 import com.product.dto.ProductDTO;
-import com.product.entity.ProductEntity;
 import com.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/shop")
@@ -26,20 +24,16 @@ public class ProductController {
         return new ResponseEntity(productService.create(productDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping(path = "/product", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<?> products(@RequestParam(value = "nameFilter") String nameFilter,
+    @GetMapping(path = "/product/page", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<?> productsByQuery(@RequestParam(value = "nameFilter") String nameFilter,
                                       @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
                                       @RequestParam(value = "size", required = false, defaultValue = "15") Integer size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<ProductEntity> all = productService.findAll(nameFilter, pageable);
-        return new ResponseEntity<>(all, HttpStatus.OK);
+        return new ResponseEntity<>(productService.findAll(nameFilter, pageable).getContent(), HttpStatus.OK);
     }
 
-/*    @PostMapping(path = "/product")
-    public ResponseEntity<?> productsPost(@RequestBody String nameFilter,
-                                      @RequestParam(value = "count", required = false, defaultValue = "15") Integer count) {
-        System.out.println(nameFilter);
-        System.out.println(count);
-        return new ResponseEntity(null, HttpStatus.CREATED);
-    }*/
+    @GetMapping(path = "/product", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<?> productsByJava(@RequestParam(value = "nameFilter") String nameFilter) {
+        return new ResponseEntity<>(productService.findAll(nameFilter), HttpStatus.OK);
+    }
 }
