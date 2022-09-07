@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -22,12 +23,29 @@ public class ProductControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ProductController controller;
+    private ProductRepository productRepository;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
 
-    @Ignore
+    private static String URL = "/api/shop/product";
+
+    @Test
+    public void create() throws Exception {
+        ProductDTO productDTO =  new ProductDTO("Eva", "desc");
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(productDTO);
+
+        mockMvc.perform(
+                post(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andExpect(status().isCreated())
+                .andReturn();
+    }
+
     @Test
     public void findByFilter() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
@@ -37,5 +55,33 @@ public class ProductControllerTest {
         mockMvc.perform(get("/api/shop/product?nameFilter=%5EE.*%24")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+
+        ProductDTO productDTO = new ProductDTO("testEva", "desc");
+        createProduct(productDTO);
+
+        mockMvc.perform(get(URL + nameFilter)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        productDTO = new ProductDTO("zzzzzz", "desc");
+        createProduct(productDTO);
+        nameFilter = "?nameFilter=^.*[eva].*$";
+
+        mockMvc.perform(get(URL + nameFilter)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    public void createProduct(ProductDTO productDTO) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(productDTO);
+
+        mockMvc.perform(
+                post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andReturn();
     }
 }

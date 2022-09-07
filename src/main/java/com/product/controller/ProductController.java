@@ -1,6 +1,7 @@
 package com.product.controller;
 
 import com.product.dto.ProductDTO;
+import com.product.entity.ProductEntity;
 import com.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/shop")
@@ -34,6 +36,10 @@ public class ProductController {
 
     @GetMapping(path = "/product", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<?> productsByJava(@RequestParam(value = "nameFilter") String nameFilter) {
-        return new ResponseEntity<>(productService.findAll(nameFilter), HttpStatus.OK);
+        List<ProductEntity> products = productService.findAll(nameFilter);
+        if(products.isEmpty()){
+            return new ResponseEntity<>(products, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 }
