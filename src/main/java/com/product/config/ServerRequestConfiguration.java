@@ -13,12 +13,7 @@ public class ServerRequestConfiguration {
     @Bean
     public ConfigurableServletWebServerFactory webServerFactory() {
         TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
-        factory.addConnectorCustomizers(new TomcatConnectorCustomizer() {
-            @Override
-            public void customize(Connector connector) {
-                connector.setProperty("relaxedQueryChars", "^|{}[]:");
-            }
-        });
+        factory.addConnectorCustomizers(connector -> connector.setProperty("relaxedQueryChars", "^|{}[]:"));
         return factory;
     }
 }
